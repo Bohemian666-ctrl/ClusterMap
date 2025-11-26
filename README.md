@@ -1,1 +1,64 @@
 # ClusterMap
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+
+# 1. Cargar matriz triangular
+df = pd.read_csv("GeneticdistancesK2PPom32seqs658pb.csv", header=0, index_col=0)
+
+# 2. Hacer matriz simétrica (usar transpuesta para completar)
+df_sym = df.copy()
+df_sym = df_sym.combine_first(df_sym.T)   # completa los NaN con la parte superior
+
+# 3. Llenar diagonal con 0
+np.fill_diagonal(df_sym.values, 0)
+
+# -------- COLORMAP PERSONALIZADO :) --------
+colors = [
+    (0.00, "#A64B48"),   # Rojo hígado claro
+    (0.20, "#8EC1D6"),   # Rosado-celeste
+    (0.40, "#64B5F6"),   # Celeste
+    (0.70, "#1565C0"),   # Azul intenso
+    (1.00, "#0A1A4F")    # Azul prusia
+]
+
+custom_cmap = LinearSegmentedColormap.from_list("customK2P", colors)
+
+# 4. Obtener valor máximo para normalizar
+max_val = df_sym.values.max()
+
+# 5. Clustermap real
+sns.clustermap(
+    df_sym,
+    method='average',
+    metric='euclidean',
+    cmap=custom_cmap,
+    linewidths=0.3,
+    figsize=(12, 12),
+    dendrogram_ratio=0.15,
+    cbar_pos=(0.02, 0.75, 0.03, 0.18),
+    vmin=0,
+    vmax=max_val
+)
+# 6. Guardar
+plt.savefig("GeneticK2PDistance3.png", dpi=300, bbox_inches='tight')
+plt.show()
+
+# Heatmap
+import pandas as pd
+
+df = pd.read_csv("GeneticdistancesK2PPom32seqs658pb.csv", index_col=0)
+df
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(14,12))
+sns.heatmap(df, cmap="viridis", linewidths=.5)
+
+plt.title("Pairwise K2P distances - Pomacea", fontsize=16)
+plt.tight_layout()
+plt.savefig("heatmap_k2p_Pom.png", dpi=300)
+plt.show()
